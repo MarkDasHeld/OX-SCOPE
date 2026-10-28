@@ -1,0 +1,78 @@
+name: Build OX-SCOPE Intel DMG
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'mac/**'
+      - 'web/**'
+      - '.github/workflows/build-intel-dmg.yml'
+
+jobs:
+  build-intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 25
+    steps:
+      - name: Check out OX-SCOPE source
+        uses: actions/checkout@v4
+
+      - name: Check compiler and tools
+        run: |
+          set -euo pipefail
+          uname -m
+          xcodebuild -version
+          xcrun --find swiftc
+          cmake --version
+
+      - name: Build bundled MediaRemote adapter (no user Homebrew)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/ungive/mediaremote-adapter.git "$RUNNER_TEMP/mediaremote-adapter-src"
+          cmake -S "$RUNNER_TEMP/mediaremote-adapter-src" -B "$RUNNER_TEMP/mediaremote-adapter-build" -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$RUNNER_TEMP/mediaremote-adapter-build" --config Release -j 4
+          test -d "$RUNNER_TEMP/mediaremote-adapter-build/MediaRemoteAdapter.framework"
+          test -f "$RUNNER_TEMP/mediaremote-adapter-src/bin/mediaremote-adapter.pl"
+
+      - name: Compile native Intel app, embed metadata component and sign locally
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/OX-SCOPE.app"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/web" "$APP/Contents/Resources/mediaremote-adapter"
+          cp mac/Info.plist "$APP/Contents/Info.plist"
+          cp web/index.html web/style.css web/app.js "$APP/Contents/Resources/web/"
+          cp "$RUNNER_TEMP/mediaremote-adapter-src/bin/mediaremote-adapter.pl" "$APP/Contents/Resources/mediaremote-adapter/"
+          cp "$RUNNER_TEMP/mediaremote-adapter-src/LICENSE" "$APP/Contents/Resources/mediaremote-adapter/LICENSE"
+          cp -R "$RUNNER_TEMP/mediaremote-adapter-build/MediaRemoteAdapter.framework" "$APP/Contents/Resources/mediaremote-adapter/"
+          xcrun swiftc -Onone -target x86_64-apple-macos13.0 mac/main.swift -o "$APP/Contents/MacOS/OX-SCOPE" \
+            -framework AppKit -framework WebKit -framework ScreenCaptureKit \
+            -framework CoreMedia -framework CoreAudio -framework AVFoundation
+          chmod +x "$APP/Contents/MacOS/OX-SCOPE"
+          xcrun iconutil -c icns mac/OX-SCOPE.iconset -o "$APP/Contents/Resources/OX-SCOPE.icns"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Contents/Info.plist"
+          xcrun lipo -archs "$APP/Contents/MacOS/OX-SCOPE" | grep -q x86_64
+          codesign --force --sign - --timestamp=none --deep "$APP"
+          codesign --verify --deep --verbose=2 "$APP"
+          test -f "$APP/Contents/Resources/mediaremote-adapter/MediaRemoteAdapter.framework/MediaRemoteAdapter"
+          echo "Mac app compiled; Intel binary verified. This app is ad-hoc signed, NOT notarized."
+
+      - name: Assemble drag-to-Applications DMG
+        run: |
+          set -euo pipefail
+          ROOT="$RUNNER_TEMP/OX-SCOPE-DMG"
+          mkdir -p "$ROOT"
+          cp -R "$RUNNER_TEMP/OX-SCOPE.app" "$ROOT/OX-SCOPE.app"
+          ln -s /Applications "$ROOT/Applications"
+          hdiutil create -volname 'OX-SCOPE 1.4 Intel' -srcfolder "$ROOT" -ov -format UDZO -o "$GITHUB_WORKSPACE/OX-SCOPE-1.4-Intel.dmg"
+          hdiutil verify "$GITHUB_WORKSPACE/OX-SCOPE-1.4-Intel.dmg"
+          shasum -a 256 "$GITHUB_WORKSPACE/OX-SCOPE-1.4-Intel.dmg" > "$GITHUB_WORKSPACE/OX-SCOPE-1.4-Intel.sha256"
+
+      - name: Upload actual precompiled Intel DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: OX-SCOPE-1.4-Intel-DMG
+          path: |
+            OX-SCOPE-1.4-Intel.dmg
+            OX-SCOPE-1.4-Intel.sha256
+          if-no-files-found: error
+          retention-days: 30
