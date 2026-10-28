@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>OX-SCOPE 1.5 — Audio Player + Signal Laboratory</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="classic">
+<div class="shell" id="app">
+  <header class="heading">
+    <span class="app-icon" aria-hidden="true">▥</span>
+    <b>OX-SCOPE</b><span class="byline">/ stereo audio workstation</span>
+    <div class="headspacer"></div>
+    <span class="format" id="format">NO SOURCE</span>
+    <button class="header-btn" id="fullscreen" title="Fullscreen / leave fullscreen">[ ]</button>
+  </header>
+  <div class="menu">
+    <label class="menu-file file-pick" id="openfiles" title="Add local tracks"><u>F</u>ile<input type="file" id="menuAudioInput" accept="audio/*,.wav,.wave,.aif,.aiff,.flac,.m4a,.mp3" multiple></label>
+    <label class="menu-file file-pick" id="openart" title="Choose image artwork"><u>A</u>rt<input type="file" id="artInput" accept="image/*"></label>
+    <label class="menu-file file-pick" id="importskin" title="Import a CSS skin">Skin...<input type="file" id="skinInput" accept="text/css,.css"></label><button id="resetskin" title="Remove imported CSS skin">Reset skin</button>
+    <label class="plain">View <select id="viewModeSelect" aria-label="Display mode"><option value="cover">Cover + progress</option><option value="bars">Bars</option><option value="spectrogram">Spectrogram</option><option value="o">O / wave</option><option value="l">L / X-Y</option></select></label>
+    <label class="plain">Input <select id="sourceMode" aria-label="Audio source"><option value="system">System audio</option><option value="file">Local files</option></select></label>
+    <button id="captureBtn" class="start-capture" title="Start or stop live system audio capture">START CAPTURE</button>
+    <label class="plain">Theme <select id="theme" aria-label="Theme">
+      <option value="classic">foobar / classic</option><option value="win98">Win98 utility</option>
+      <option value="dark">Night terminal</option><option value="night98">Classic night / Win2000</option><option value="platinum">Mac OS 9</option>
+    </select></label>
+    <label class="plain">Phosphor <input type="color" id="phosphor" value="#68e384" title="Oscilloscope phosphor color"></label>
+    <span class="menufill"></span><span class="tiny">v1.5 / SYSTEM + PCM</span>
+  </div>
+  <div class="workspace" id="workspace">
+    <section class="player-pane" aria-label="Audio player and input status">
+      <div class="cover-cell"><div class="cover" id="cover" title="Cover artwork (use Art to change)"><img id="artwork" alt="Current file cover art"><div id="coverplaceholder" class="cover-placeholder">OX<br><small>NO ARTWORK</small></div></div></div>
+      <div class="track-info">
+        <div class="minor">TRACK</div>
+        <div class="track-title" id="tracktitle">System audio ready</div>
+        <div class="file-sub" id="trackinfo">Start capture to visualize any Mac audio</div>
+      </div>
+      <div class="player-bottom">
+        <div class="transport"><button id="prev" title="Previous track">|◀</button><button id="play" class="play" title="Play / pause (Space)">▶</button><button id="stop" title="Stop">■</button><button id="next" title="Next track">▶|</button><label id="loadbtn" class="file-pick open-label" title="Add audio files">OPEN<input type="file" id="audioInput" accept="audio/*,.wav,.wave,.aif,.aiff,.flac,.m4a,.mp3" multiple></label></div>
+        <div class="seekrow"><span id="timeNow">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek position"><span id="timeTotal">0:00</span></div>
+        <div class="volume-row"><span>VOL</span><input id="volume" type="range" min="0" max="100" value="75" aria-label="Volume"><span id="volumeText">75%</span><span class="source-type" id="scopeSource">L/R LIVE</span></div>
+      </div>
+      <div class="playlist-head"><b>PLAYLIST</b><span id="queueCount">0 FILES</span><button id="clearQueue" title="Clear queue">X</button></div>
+      <div class="playlist" id="playlist" role="listbox" aria-label="Track queue" tabindex="0"><div class="emptyqueue">OPEN FILES OR DRAG HERE</div></div>
+      <div class="status"><span id="status">READY.</span><span>STEREO · LOCAL</span></div>
+    </section>
+    <div class="pane-grip" id="paneGrip" title="Drag to resize the player area" role="separator" aria-label="Resize player and visualization" tabindex="0"></div>
+    <div class="visual-pane">
+      <div class="view-toolbar">
+        <div class="view-tabs" role="tablist" aria-label="Visualizer mode">
+          <button data-mode="cover" role="tab" aria-selected="false">COVER</button>
+          <button data-mode="bars" class="active" role="tab" aria-selected="true">BARS</button>
+          <button data-mode="spectrogram" role="tab" aria-selected="false">SPECTROGRAM</button>
+          <button data-mode="o" role="tab" aria-selected="false">O: WAVE</button>
+          <button data-mode="l" role="tab" aria-selected="false">L: X/Y</button>
+        </div>
+        <span id="vizStatus" class="viz-tag">SIGNAL / OFF</span>
+      </div>
+      <div class="scope-well" id="scopeWell"><canvas id="scope" aria-label="Realtime audio visualizer"></canvas>
+        <div class="scope-caption" id="scopeCaption">FFT SPECTRUM / CH L + R</div>
+        <div class="scope-sub" id="scopeSub">NO INPUT</div>
+        <div class="drop-message" id="dropMessage"><b>NO SIGNAL</b><span>SELECT SYSTEM AUDIO → START CAPTURE<br>OR SWITCH TO LOCAL FILES</span></div>
+      </div>
+      <div class="scope-tools">
+        <label>GAIN <output id="gainVal">1.0×</output><input id="gain" type="range" min="25" max="1000" value="100" step="5"></label>
+        <label>ZOOM <output id="zoomVal">1.0×</output><input id="zoom" type="range" min="50" max="1600" value="100" step="10"></label>
+        <label>TIME <output id="windowVal">20ms</output><input id="window" type="range" min="4" max="100" value="20" step="1"></label>
+        <label>TRAIL <output id="trailVal">10%</output><input id="trail" type="range" min="0" max="95" value="10" step="5"></label>
+        <label class="checkboxline"><input id="gridlines" type="checkbox" checked> GRID</label>
+      </div>
+      <div class="bottom-help"><span id="audioDetails">SYSTEM CAPTURE / LOCAL FILE PLAYER</span><span id="renderDetails">60 FPS MAX</span></div>
+    </div>
+  </div>
+  <div class="footer"><span>OX-SCOPE / 2026</span><span id="footerDesc">Native system audio + accurate stereo file scope</span><span id="keyboardHint">SPACE play (file) · F fullscreen</span></div>
+</div>
+<style id="customSkin"></style>
+<audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
+<script src="app.js"></script>
+</body>
+</html>
