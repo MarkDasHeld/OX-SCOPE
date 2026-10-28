@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleName</key><string>OX-SCOPE</string>
+  <key>CFBundleDisplayName</key><string>OX-SCOPE</string>
+  <key>CFBundleIdentifier</key><string>com.oxohell.oxscope</string>
+  <key>CFBundleExecutable</key><string>OX-SCOPE</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>1.4.0</string>
+  <key>CFBundleVersion</key><string>140</string>
+  <key>LSMinimumSystemVersion</key><string>13.0</string>
+  <key>NSAudioCaptureUsageDescription</key><string>OX-SCOPE uses system audio to visualize audio from other apps. Audio is processed locally and is not recorded or uploaded.</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>LSApplicationCategoryType</key><string>public.app-category.music</string>
+  <key>CFBundleIconFile</key><string>OX-SCOPE</string>
+  <key>NSMainNibFile</key><string></string>
+<key>NSAppleEventsUsageDescription</key><string>Read current song title and playback duration from Spotify or Apple Music when you allow Automation.</string>
+</dict></plist>

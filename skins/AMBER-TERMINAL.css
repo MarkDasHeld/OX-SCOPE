@@ -1,0 +1,5 @@
+/* OX-SCOPE / AMBER TERMINAL (import using the Skin... button) */
+body { --face:#c6bea8;--light:#f8f0d8;--shade:#786f5f;--deep:#4b3e2d;--panel:#f9f2df;--title:#88714f;--accent:#795a26;--button:#d5c8a9;--viz:#1d1304;}
+body .scope-caption, body .scope-sub{color:#f2b954}
+body .scope-well{border-color:#5b4221 #eee0b8 #eee0b8 #5b4221}
+body .drop-message{color:#f1b550}

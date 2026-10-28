@@ -1,0 +1,4 @@
+/* OX-SCOPE / PRE-2000 BEIGE PLAYER */
+body { --face:#ded8c8;--light:#faf7ef;--shade:#8f8477;--deep:#594f4b;--panel:#fffdf4;--text:#2a2824;--line:#968b7c;--title:#cdc6b4;--accent:#5d4d35;--button:#ddd5c4;--viz:#07170f;}
+body .heading,body .menu{font-family:Tahoma,Arial,sans-serif;font-size:11px}
+body button{font-size:11px}
